@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Contributions 3D</title>
+<meta name="description" content="Altay Abdurakhim's GitHub contributions as an interactive 3D city — rotate, zoom and pick any date range.">
+<style>
+  :root {
+    --bg: #000; --panel: rgba(28, 28, 30, 0.72); --line: rgba(255, 255, 255, 0.1);
+    --text: #f5f5f7; --muted: #86868b; --blue: #2997ff;
+    --ai: linear-gradient(90deg, #ff9f0a, #ff375f 35%, #bf5af2 70%, #0a84ff);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased; }
+  canvas { display: block; touch-action: none; }
+  .glass { background: var(--panel); border: 1px solid var(--line); border-radius: 22px;
+    backdrop-filter: blur(24px) saturate(160%); -webkit-backdrop-filter: blur(24px) saturate(160%); }
+  header { position: fixed; top: 16px; left: 16px; right: 16px; display: flex; gap: 12px; flex-wrap: wrap;
+    align-items: flex-start; justify-content: space-between; pointer-events: none; }
+  header > * { pointer-events: auto; }
+  .title { padding: 16px 20px; }
+  .eyebrow { font-size: 13px; font-weight: 600; background: var(--ai); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .total { font-size: 44px; font-weight: 700; letter-spacing: -1.5px; line-height: 1.05; margin-top: 2px; }
+  .total small { font-size: 15px; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-left: 6px; }
+  .stats { display: flex; gap: 18px; margin-top: 10px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+  .stats b { display: block; color: var(--text); font-size: 17px; font-weight: 600; }
+  .controls { padding: 12px; display: flex; flex-direction: column; gap: 10px; max-width: 100%; }
+  .seg { display: flex; background: rgba(118, 118, 128, 0.24); border-radius: 12px; padding: 3px; overflow-x: auto; }
+  .seg button { flex: 1; border: 0; background: transparent; color: var(--text); font: 600 13px/1 inherit; font-family: inherit;
+    padding: 9px 12px; border-radius: 9px; cursor: pointer; white-space: nowrap; }
+  .seg button.on { background: #636366; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }
+  .dates { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+  .dates input { background: rgba(118, 118, 128, 0.24); color: var(--text); border: 0; border-radius: 9px;
+    padding: 8px 10px; font: 500 13px inherit; font-family: inherit; color-scheme: dark; }
+  .row { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+  .toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
+  .switch { width: 42px; height: 26px; border-radius: 13px; background: rgba(118, 118, 128, 0.4); position: relative; transition: background .2s; }
+  .switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 22px; height: 22px; border-radius: 50%; background: #fff; transition: transform .2s; }
+  .toggle.on .switch { background: #30d158; }
+  .toggle.on .switch::after { transform: translateX(16px); }
+  .legend { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .legend i { width: 90px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #0a84ff, #5e5ce6, #bf5af2, #ff375f, #ff9f0a); }
+  footer { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); padding: 10px 16px; font-size: 13px;
+    color: var(--muted); white-space: nowrap; }
+  footer a { color: var(--blue); text-decoration: none; }
+  footer .long + span { display: none; }
+  @media (max-width: 640px) { footer .long + span { display: inline; } }
+  #tip { position: fixed; pointer-events: none; padding: 10px 14px; font-size: 13px; opacity: 0; transition: opacity .12s;
+    transform: translate(-50%, calc(-100% - 14px)); white-space: nowrap; }
+  #tip b { font-size: 15px; }
+  #msg { position: fixed; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 15px; }
+  @media (max-width: 640px) {
+    header { top: 10px; left: 10px; right: 10px; }
+    .title { padding: 12px 16px; width: 100%; }
+    .total { font-size: 34px; }
+    .controls { width: 100%; padding: 10px; gap: 8px; }
+    .seg button { padding: 8px 6px; font-size: 12px; }
+    .stats { gap: 12px; }
+    footer { font-size: 12px; bottom: 10px; }
+    footer .long { display: none; }
+    .legend { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="msg">Loading contributions…</div>
+<header>
+  <div class="glass title">
+    <div class="eyebrow">Altay Abdurakhim · Contributions in 3D</div>
+    <div class="total"><span id="total">0</span><small id="range"></small></div>
+    <div class="stats">
+      <div><b id="active">0</b>active days</div>
+      <div><b id="best">0</b>best day</div>
+      <div><b id="streak">0</b>longest streak</div>
+    </div>
+  </div>
+  <div class="glass controls">
+    <div class="seg" id="presets"></div>
+    <div class="seg" id="years"></div>
+    <div class="dates">From <input type="date" id="from"> to <input type="date" id="to"></div>
+    <div class="row">
+      <div class="toggle on" id="spin"><span class="switch"></span>Auto-rotate</div>
+      <div class="legend">Less <i></i> More</div>
+    </div>
+  </div>
+</header>
+<div class="glass" id="tip"></div>
+<footer class="glass"><span class="long">Drag to rotate · Scroll or pinch to zoom · Right-drag to move · </span><span>Drag · pinch · two fingers to move · </span><a href="https://github.com/a1tvv">@a1tvv</a></footer>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const CELL = 1.2, DAY = 86400000;
+const STOPS = ['#0a84ff', '#5e5ce6', '#bf5af2', '#ff375f', '#ff9f0a'].map(c => new THREE.Color(c));
+const EMPTY = new THREE.Color('#2c2c2e');
+const $ = id => document.getElementById(id);
+const iso = t => new Date(t).toISOString().slice(0, 10);
+const parse = s => Date.parse(s + 'T00:00:00Z');
+const fmt = (t, opts) => new Date(t).toLocaleDateString('en-US', { timeZone: 'UTC', ...opts });
+
+// ── scene ──
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+document.body.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#000000');
+scene.fog = new THREE.Fog('#000000', 60, 200);
+const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.1, 1000);
+const controls = new OrbitControls(camera, renderer.domElement);
+Object.assign(controls, { enableDamping: true, dampingFactor: 0.08, autoRotate: true, autoRotateSpeed: 0.6,
+  maxPolarAngle: Math.PI / 2.15, minDistance: 6, maxDistance: 220 });
+
+scene.add(new THREE.HemisphereLight('#ffffff', '#1a1a2e', 1.1));
+const sun = new THREE.DirectionalLight('#ffffff', 2.2);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+scene.add(sun, sun.target);
+const rim = new THREE.PointLight('#bf5af2', 40, 80);
+scene.add(rim);
+
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ color: '#0b0b0d', roughness: 0.9 }));
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+const box = new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0);
+const material = new THREE.MeshStandardMaterial({ roughness: 0.35, metalness: 0.15 });
+let mesh = null, labels = new THREE.Group(), cells = [], anim = null;
+scene.add(labels);
+
+function color(t) {
+  const x = Math.min(t, 1) * (STOPS.length - 1), i = Math.min(Math.floor(x), STOPS.length - 2);
+  return STOPS[i].clone().lerp(STOPS[i + 1], x - i);
+}
+
+function label(text, size = 0.55) {
+  const c = document.createElement('canvas');
+  c.width = 256; c.height = 64;
+  const g = c.getContext('2d');
+  g.font = '600 34px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  g.fillStyle = '#86868b';
+  g.textBaseline = 'middle';
+  g.fillText(text, 4, 34);
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false }));
+  s.scale.set(size * 4, size, 1);
+  return s;
+}
+
+// ── data ──
+const data = await fetch('data/contributions.json').then(r => r.json()).catch(() => null);
+if (!data) { $('msg').textContent = 'Could not load data/contributions.json'; throw new Error('no data'); }
+$('msg').remove();
+const counts = new Map(data.days);
+const first = parse(data.days[0][0]), last = parse(data.days[data.days.length - 1][0]);
+for (const id of ['from', 'to']) { $(id).min = iso(first); $(id).max = iso(last); }
+
+function build(from, to) {
+  if (mesh) { scene.remove(mesh); mesh.dispose(); }
+  labels.clear();
+  const start = from - new Date(from).getUTCDay() * DAY;   // weeks start on Sunday, like on GitHub
+  cells = [];
+  let max = 1, total = 0, active = 0, best = [0, from], streak = 0, run = 0;
+  for (let t = from; t <= to; t += DAY) {
+    const c = counts.get(iso(t)) || 0;
+    cells.push({ t, c, week: Math.floor((t - start) / DAY / 7), dow: new Date(t).getUTCDay() });
+    max = Math.max(max, c); total += c;
+    if (c) { active++; run++; streak = Math.max(streak, run); } else run = 0;
+    if (c > best[0]) best = [c, t];
+  }
+  const weeks = cells[cells.length - 1].week + 1;
+  const maxH = Math.min(6, Math.max(3, weeks * CELL * 0.12)), labelSize = Math.max(0.6, weeks * 0.028);
+  mesh = new THREE.InstancedMesh(box, material, cells.length);
+  mesh.castShadow = mesh.receiveShadow = true;
+  cells.forEach((cell, i) => {
+    const k = cell.c ? Math.sqrt(cell.c / max) : 0;
+    cell.h = cell.c ? 0.25 + maxH * k : 0.08;
+    cell.x = (cell.week - weeks / 2) * CELL;
+    cell.z = (cell.dow - 3) * CELL;
+    cell.color = cell.c ? color(k) : EMPTY;
+    mesh.setColorAt(i, cell.color);
+  });
+  scene.add(mesh);
+
+  let month = -1, lastWeek = -9;
+  for (const cell of cells) {
+    const m = new Date(cell.t).getUTCMonth();
+    if (m !== month && (cell.dow === 0 || cell === cells[0])) {
+      month = m;
+      if (cell.week - lastWeek < 3) continue;   // keep labels from overlapping
+      lastWeek = cell.week;
+      const s = label(fmt(cell.t, weeks > 60 ? { month: 'short', year: '2-digit' } : { month: 'short' }), labelSize);
+      s.position.set(cell.x + labelSize * 1.6, 0.05, -3 * CELL - 1 - labelSize);
+      labels.add(s);
+    }
+  }
+  for (const [d, name] of [[1, 'Mon'], [3, 'Wed'], [5, 'Fri']]) {
+    const s = label(name, labelSize * 0.9);
+    s.position.set(-weeks / 2 * CELL - 1 - labelSize * 1.8, 0.05, (d - 3) * CELL);
+    labels.add(s);
+  }
+
+  const width = weeks * CELL, size = Math.max(width, 9 * CELL);
+  floor.scale.set(size + 14, 9 * CELL + 14, 1);
+  sun.position.set(size * 0.3, 30, 20);
+  Object.assign(sun.shadow.camera, { left: -size, right: size, top: size, bottom: -size, far: 120 });
+  sun.shadow.camera.updateProjectionMatrix();
+  rim.position.set(-size * 0.4, 8, -12);
+  const dist = Math.max(18, width * 0.95);
+  controls.target.set(0, 1, 0);
+  camera.position.set(dist * 0.62, dist * 0.55, dist * 0.78);
+  scene.fog.near = dist * 1.6; scene.fog.far = dist * 4;
+
+  $('total').textContent = total.toLocaleString('en-US');
+  $('range').textContent = `contributions · ${fmt(from, { month: 'short', day: 'numeric', year: 'numeric' })} – ${fmt(to, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  $('active').textContent = active;
+  $('best').textContent = best[0] ? `${best[0]} · ${fmt(best[1], { month: 'short', day: 'numeric' })}` : '0';
+  $('streak').textContent = `${streak} ${streak === 1 ? 'day' : 'days'}`;
+  $('from').value = iso(from); $('to').value = iso(to);
+  history.replaceState(null, '', `?from=${iso(from)}&to=${iso(to)}`);
+  anim = { start: performance.now(), weeks };
+}
+
+const dummy = new THREE.Object3D();
+function grow(now) {   // bars rise week by week, like a wave
+  if (!anim) return;
+  let done = true;
+  cells.forEach((cell, i) => {
+    const p = Math.min(Math.max((now - anim.start - cell.week * (500 / anim.weeks)) / 700, 0), 1);
+    if (p < 1) done = false;
+    const e = 1 - Math.pow(1 - p, 3);
+    dummy.position.set(cell.x, 0, cell.z);
+    dummy.scale.set(1, Math.max(cell.h * e, 0.001), 1);
+    dummy.updateMatrix();
+    mesh.setMatrixAt(i, dummy.matrix);
+  });
+  mesh.instanceMatrix.needsUpdate = true;
+  if (done) anim = null;
+}
+
+// ── controls ──
+const presets = [['All time', 0], ['1Y', 365], ['6M', 182], ['3M', 91], ['1M', 30]];
+function select(group, button) { for (const b of document.querySelectorAll('.seg button')) b.classList.toggle('on', b === button); }
+for (const [name, days] of presets) {
+  const b = document.createElement('button');
+  b.textContent = name;
+  b.onclick = () => { select('p', b); build(days ? Math.max(first, last - (days - 1) * DAY) : first, last); };
+  $('presets').append(b);
+}
+for (let y = new Date(first).getUTCFullYear(); y <= new Date(last).getUTCFullYear(); y++) {
+  const b = document.createElement('button');
+  b.textContent = y;
+  b.onclick = () => { select('y', b); build(Math.max(first, Date.UTC(y, 0, 1)), Math.min(last, Date.UTC(y, 11, 31))); };
+  $('years').append(b);
+}
+function custom() {
+  let a = parse($('from').value), b = parse($('to').value);
+  if (isNaN(a) || isNaN(b)) return;
+  if (a > b) [a, b] = [b, a];
+  select(null, null);
+  build(Math.max(first, a), Math.min(last, b));
+}
+$('from').onchange = $('to').onchange = custom;
+$('spin').onclick = () => { controls.autoRotate = !controls.autoRotate; $('spin').classList.toggle('on', controls.autoRotate); };
+controls.addEventListener('start', () => { controls.autoRotate = false; $('spin').classList.remove('on'); });
+
+const q = new URLSearchParams(location.search);
+if (q.get('from') && q.get('to')) {
+  $('from').value = q.get('from'); $('to').value = q.get('to'); custom();
+} else {
+  const b = $('presets').children[1];
+  select('p', b);
+  build(Math.max(first, last - 364 * DAY), last);
+}
+
+// ── hover tooltip ──
+const ray = new THREE.Raycaster(), pointer = new THREE.Vector2();
+let hovered = -1;
+function hover(e) {
+  pointer.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  ray.setFromCamera(pointer, camera);
+  const hit = mesh && ray.intersectObject(mesh)[0];
+  const id = hit ? hit.instanceId : -1;
+  if (hovered !== -1 && hovered !== id) mesh.setColorAt(hovered, cells[hovered].color);
+  if (id !== -1) {
+    const c = cells[id];
+    mesh.setColorAt(id, new THREE.Color('#ffffff'));
+    $('tip').innerHTML = `<b>${c.c} ${c.c === 1 ? 'contribution' : 'contributions'}</b><br>${fmt(c.t, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}`;
+    Object.assign($('tip').style, { left: e.clientX + 'px', top: e.clientY + 'px', opacity: 1 });
+  } else $('tip').style.opacity = 0;
+  if (mesh) mesh.instanceColor.needsUpdate = true;
+  hovered = id;
+}
+renderer.domElement.addEventListener('pointermove', hover);
+renderer.domElement.addEventListener('pointerleave', () => { $('tip').style.opacity = 0; });
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+renderer.setAnimationLoop(now => { grow(now); controls.update(); renderer.render(scene, camera); });
+</script>
+</body>
+</html>

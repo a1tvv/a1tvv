@@ -29,7 +29,9 @@
 
 <img src="assets/titles/activity.svg" alt="Activity" width="100%">
 
-<img src="profile-3d-contrib/profile-night-rainbow.svg" alt="3D contribution graph" width="100%">
+<a href="https://a1tvv.github.io/a1tvv/"><img src="profile-3d-contrib/profile-night-rainbow.svg" alt="3D contribution graph — open the interactive version" width="100%"></a>
+
+<p align="center"><a href="https://a1tvv.github.io/a1tvv/"><b>Open the interactive 3D view ›</b></a><br><sub>Rotate, zoom and pick any date range</sub></p>
 
 <br>
 <br>
