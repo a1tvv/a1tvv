@@ -3,7 +3,7 @@
 <p align="center">
   Second-year IT student at the International University of Central Asia and tech lead of a two-person startup.<br>
   I build Python backends with Django and FastAPI, Telegram bots and AI integrations — and right now I'm focused on competitive programming in C++.<br>
-  <sub>Kazakh · Russian · Kyrgyz · English</sub>
+  <sub>🇰🇿 Kazakh · 🇰🇬 Kyrgyz · 🇷🇺 Russian · 🇬🇧 English</sub>
 </p>
 
 <br>
