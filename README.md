@@ -2,7 +2,7 @@
 
 <p align="center">
   Second-year IT student at the International University of Central Asia and tech lead of a two-person startup.<br>
-  I build Django backends, Telegram bots and AI integrations — and I'm learning C++ and iOS development.<br>
+  I build Python backends with Django and FastAPI, Telegram bots and AI integrations — and right now I'm focused on competitive programming in C++.<br>
   <sub>Kazakh · Russian · Kyrgyz · English</sub>
 </p>
 
@@ -22,7 +22,7 @@
 
 <img src="assets/titles/stack.svg" alt="Stack" width="100%">
 
-<img src="assets/stack.svg" alt="Stack: Python, Django, aiogram, FastAPI, C++, JavaScript, TypeScript, HTML, CSS, Swift, Git, GitHub, PostgreSQL, MongoDB, SQLite, Pydantic, Gemini, OpenAI API, OpenRouter, React Native, Expo, Vercel, DigitalOcean, Gunicorn, GitHub Actions, Xcode" width="100%">
+<img src="assets/stack.svg" alt="Main stack: C++, Python, Django, FastAPI. Also: aiogram, PostgreSQL, MongoDB, SQLite, Pydantic, Gemini, OpenAI API, OpenRouter, JavaScript, TypeScript, HTML, CSS, React Native, Expo, Git, GitHub, Vercel, DigitalOcean, Gunicorn, GitHub Actions" width="100%">
 
 <br>
 <br>
@@ -36,11 +36,9 @@
 <br>
 <br>
 
-<img src="assets/titles/learning.svg" alt="Currently learning" width="100%">
+<img src="assets/titles/focus.svg" alt="Right now" width="100%">
 
-<p>
-<a href="https://github.com/a1tvv/olymp"><img src="assets/learning/cpp.svg" alt="C++ — olympiad problems" width="49%"></a><img src="assets/learning/swift.svg" alt="Swift — iOS development" width="49%">
-</p>
+<a href="https://github.com/a1tvv/olymp"><img src="assets/focus.svg" alt="Right now: competitive programming in C++ — solutions in olymp" width="100%"></a>
 
 <br>
 
