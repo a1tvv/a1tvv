@@ -1,11 +1,11 @@
-# Каждый день в 03:00 по Бишкеку (21:00 UTC), при пуше в main и вручную (Actions → Run workflow):
+# Каждые 3 часа, при пуше в main и вручную (Actions → Run workflow):
 # 1) рисует 3D-картинку коммитов для README,
 # 2) выгружает историю коммитов для интерактивной 3D-страницы (docs/, GitHub Pages).
 name: 3D contributions
 
 on:
   schedule:
-    - cron: "0 21 * * *"
+    - cron: "0 */3 * * *"
   push:
     branches: [main]
   workflow_dispatch:
